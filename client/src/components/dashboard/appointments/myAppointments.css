@@ -1,0 +1,39 @@
+.appointments-container {
+    margin-left: 50px; /* Adjust for the sidebar width */
+
+    padding: 20px;
+  }
+
+  
+  .appointments-navbar {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  
+  .appointments-navbar button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .appointments-navbar button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+  }
+  
+  .appointments-navbar button.active {
+    background-color: #2c3e50;
+  }
+  
+  .appointments-content {
+    padding: 20px;
+    background-color: #ecf0f1;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
