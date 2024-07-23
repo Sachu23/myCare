@@ -7,14 +7,22 @@ const Login = () => {
 
     const navigate = useNavigate()
 
-    const onButtonClick = () => {
-        navigate('/appointments'); // Navigating Dashboard Post Login
-
-        //Need to write the login API call here
-        //@Succhay start with Nav Bar
-        
+    const onButtonClick = async () => {
+        //navigate('/'); // Navigating Dashboard Post Login
+        const response = await fetch(`http://localhost:9000/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+          })
+        });
+        navigateToHome();
     }
-  
+  const navigateToHome = () => {
+      navigate("/home");
+  }
+    
   return (
     <div className="login-container">
       <div className="login-form">

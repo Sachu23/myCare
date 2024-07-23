@@ -1,0 +1,16 @@
+.myProfile-container {
+    margin-left: 50px; /* Adjust for the sidebar width */
+
+    padding: 20px;
+  }
+
+  
+  
+  
+  .myProfile-content {
+    padding: 20px;
+    background-color: #ecf0f1;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  

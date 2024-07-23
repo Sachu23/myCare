@@ -1,4 +1,56 @@
-/* src/App.css */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Ensure space between logo and profile dropdown */
+  padding: 10px 20px;
+  background-color: #1e3c72; /* Match the navbar background */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure the header is on top */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a shadow for depth */
+}
+
+.logo {
+  height: 70px; /* Increase the height of the logo */
+}
+
+.app-content {
+  display: flex;
+  padding-top: 90px; /* Add padding to account for the fixed header */
+}
+
+.main-content {
+  flex: 1; /* Take up the remaining space */
+  height: 100vh; /* Full height of the viewport */
+  overflow-y: auto; /* Ensure content is scrollable if needed */
+  padding: 20px;
+  box-sizing: border-box; /* Ensure padding is included in the width/height */
+}
+
+.tab-content {
+  padding: 20px;
+  background-color: #ecf0f1;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.no-navbar .main-content {
+  margin-left: 0; /* Remove left margin when navbar is not present */
+}
+
+.with-navbar .main-content {
+  margin-left: 200px; /* Adjust for the sidebar width */
+}
+
+
 .App {
   font-family: 'Arial', sans-serif;
 }
