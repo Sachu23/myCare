@@ -1,16 +1,103 @@
+/* General page styling */
+.calendar-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f4f4f9;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Calendar container styling */
 .calendar-container {
-    margin-left: 50px; /* Adjust for the sidebar width */
+  margin-bottom: 30px;
+}
 
-    padding: 20px;
-  }
+/* Custom calendar styling */
+.custom-calendar {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 20px;
+}
 
-  
-  
-  
-  .calendar-content {
-    padding: 20px;
-    background-color: #ecf0f1;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
+.react-calendar__tile {
+  height: 60px; /* Adjusted height for thinner appearance */
+  width: 100px; /* Rectangular shape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: background-color 0.2s, transform 0.2s;
+  margin: 5px;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #007bff;
+  color: white;
+  transform: scale(1.05);
+}
+
+.react-calendar__tile--active {
+  background-color: #0056b3;
+  color: white;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background-color: #003f7f;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #999;
+}
+
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  font-size: 16px;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #e6e6e6;
+  border-radius: 10px;
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: #f0f0f0;
+}
+
+/* Appointments list styling */
+.appointments-list {
+  width: 100%;
+  max-width: 800px;
+}
+
+.appointment-item {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.appointment-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.no-appointments {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
