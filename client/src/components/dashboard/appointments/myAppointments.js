@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import { auth, db } from '../../../firebase'; // Ensure you have firebase config here
+import { doc, getDoc } from 'firebase/firestore';
 import './myAppointments.css';
 import './AppointmentModal.css'; // Import the modal CSS
 
@@ -12,11 +14,32 @@ const Appointments = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchColumn, setSearchColumn] = useState('patient_name');
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [userDetails, setUserDetails] = useState(null); // State to store user details
+  const [loading, setLoading] = useState(true); // State to manage loading indicator
   const appointmentsPerPage = 50;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          setUserDetails(userDoc.data());
+        } else {
+          console.error('No such document!');
+        }
+      } else {
+        console.error('No user is signed in');
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     socket.on('appointments', (data) => {
       setAppointments(data);
+      setLoading(false); // Set loading to false once appointments are fetched
     });
 
     return () => {
@@ -36,6 +59,22 @@ const Appointments = () => {
 
   const filterAppointments = (status) => {
     let filteredAppointments = appointments;
+
+    if (userDetails) {
+      const { firstName, lastName, role } = userDetails;
+      const upperFirstName = firstName.toUpperCase();
+      const upperLastName = lastName.toUpperCase();
+
+      if (role === 'Patient') {
+        filteredAppointments = filteredAppointments.filter(appointment =>
+          appointment.patient_name.includes(upperFirstName) && appointment.patient_name.includes(upperLastName)
+        );
+      } else if (role === 'Agent') {
+        filteredAppointments = filteredAppointments.filter(appointment =>
+          appointment.agent_name.includes(upperFirstName) && appointment.agent_name.includes(upperLastName)
+        );
+      }
+    }
 
     if (status !== 'All') {
       filteredAppointments = filteredAppointments.filter(appointment => appointment.schedule_status === status);
@@ -72,13 +111,17 @@ const Appointments = () => {
       case 'MISSED':
         return '#dc3545'; // Red
       case 'LATE':
-        return '#b0a331'; // Yellos
+        return '#b0a331'; // Yellow
       default:
         return '#6c757d'; // Gray
     }
   };
 
   const renderContent = () => {
+    if (loading) {
+      return <div className="loading">Loading appointments...</div>;
+    }
+
     const filteredAppointments = filterAppointments(activeTab);
     const indexOfLastAppointment = currentPage * appointmentsPerPage;
     const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage;
@@ -93,8 +136,11 @@ const Appointments = () => {
             currentAppointments.map(appointment => (
               <div key={appointment._id} className="appointment-block" onClick={() => openModal(appointment)}>
                 <div className="appointment-info">
-                  <p><strong>Patient Name:</strong> {appointment.patient_name}</p>
-                  <p><strong>Agent Name:</strong> {appointment.agent_name}</p>
+                  {userDetails.role === 'Patient' ? (
+                    <p><strong>Agent Name:</strong> {appointment.agent_name}</p>
+                  ) : (
+                    <p><strong>Patient Name:</strong> {appointment.patient_name}</p>
+                  )}
                   <p><strong>Appointment Date:</strong> {appointment.schedule_date}</p>
                 </div>
                 <div className="appointment-status" style={{ backgroundColor: getStatusColor(appointment.schedule_status) }}>
@@ -124,6 +170,7 @@ const Appointments = () => {
 
   return (
     <div className="appointments-container">
+      {userDetails && <h2>Hi {userDetails.firstName}, here are your appointments:</h2>}
       <div className="appointments-navbar">
         <button className={activeTab === 'All' ? 'active' : ''} onClick={() => setActiveTab('All')}>All</button>
         <button className={activeTab === 'Upcoming' ? 'active' : ''} onClick={() => setActiveTab('Upcoming')}>Upcoming</button>

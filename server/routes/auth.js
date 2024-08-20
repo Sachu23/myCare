@@ -1,105 +1,53 @@
+// routes/auth.js
 const express = require('express');
 const router = express.Router();
-const Patient = require('../models/Patient');
-const Agent = require('../models/Agent')
-const bcrypt = require('bcrypt');
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Patient registration
-//Patient Code - p101
-router.post('/p101/register', async (req, res) => {
-    try {
-    const { email, password, name } = req.body;
-    console.log("Recieved:", email, password);
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new Patient({ email, password: hashedPassword, name });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ error: 'Registration failed' });
-        console.log(error);
-        if(error.errorResponse.code === 11000){
-            res.status(500).json({ error: 'User already exists.' });
-        }else{
-            res.status(500).json({ error: 'Registration failed' });
-        }
-    }
+// JWT Secret
+const JWT_SECRET = 'your_jwt_secret'; // Replace with a secure secret in production
+
+// Helper function to generate JWT
+const generateToken = (userId) => {
+    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h' });
+};
+
+// Registration route
+router.post('/register', async (req, res) => {
+  const { firstName, lastName, email, password, role } = req.body;
+  try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User({ firstName, lastName, email, password: hashedPassword, role });
+      await user.save();
+      const token = generateToken(user._id);
+      res.status(201).json({ token, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role });
+  } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ error: 'User registration failed' });
+  }
 });
 
-// Patient registration
-// Agent Code - a101
-router.post('/a101/register', async (req, res) => {
-    try {
-    const { email, password, name } = req.body;
-    console.log("Recieved:", email, password);
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new Agent({ email, password: hashedPassword, name });
-    //const user = new User({ email, password: hashedPassword, name });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ error: 'Registration failed' });
-        console.log(error);
-        if(error.errorResponse.code === 11000){
-            res.status(500).json({ error: 'User already exists.' });
-        }else{
-            res.status(500).json({ error: 'Registration failed' });
-        }
+// Login route
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
-});
-   
-// Patient login
-router.post('/p101/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        console.log("Recieved:", email, password);
-        const user = await Patient.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication failed' });
-        }
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-            return res.status(401).json({ error: 'Authentication failed' });
-        }
-        const token = jwt.sign({ userId: user._id }, 'Sachu@007', {
-        expiresIn: '10m',
-        });
-        const name = user.name;
-        userResponse = {token, email, name};
-        console.log(userResponse);
-        console.log("Logged in User:"+ email);
-        res.status(200).json(userResponse);
-    } catch (err) {
-        console.log(err)
-    res.status(500).json({ error: 'Login failed' });
-    }
-});
 
-// Agent login
-router.post('/a101/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        console.log("Recieved:", email, password);
-        const user = await Agent.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication failed' });
-        }
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
-            return res.status(401).json({ error: 'Authentication failed' });
-        }
-        const token = jwt.sign({ userId: user._id }, 'Sachu@007', {
-        expiresIn: '10m',
-        });
-        const name = user.name;
-        userResponse = {token, email, name};
-        console.log(userResponse);
-        console.log("Logged in User:"+ email);
-        res.status(200).json(userResponse);
-    } catch (err) {
-        console.log(err)
-    res.status(500).json({ error: 'Login failed' });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
+
+    const token = generateToken(user._id);
+    res.status(200).json({ token, firstName: user.firstName, lastName: user.lastName, role: user.role }); // Include firstName, lastName, and role in response
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
 });
 
 module.exports = router;

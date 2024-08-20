@@ -1,55 +1,77 @@
-// src/components/Login.js
-import React from 'react';
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+//import { auth } from '../../firebase'; // Import Firebase auth
+import { signInWithEmailAndPassword } from "firebase/auth";
 import './Login.css';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBKeL0QM7289Mp8XtXT1JMmvGsWBfVsXxA",
+  authDomain: "mycare-2be1f.firebaseapp.com",
+  projectId: "mycare-2be1f",
+  storageBucket: "mycare-2be1f.appspot.com",
+  messagingSenderId: "238313137117",
+  appId: "1:238313137117:web:ea08278e4130e263978c34",
+  measurementId: "G-YL7XSQ0W36"
+};
+
+// Initialize Firebase
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+export { auth };
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-    const navigate = useNavigate()
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    const onButtonClick = async () => {
-        //navigate('/'); // Navigating Dashboard Post Login
-        const response = await fetch(`http://localhost:9000/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-          })
-        });
-        navigateToHome();
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Optionally store user details in localStorage or global state
+
+      alert('Login successful');
+      navigate('/'); // Redirect to home page after successful login
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('An error occurred during login. Please try again.');
     }
-  const navigateToHome = () => {
-      navigate("/home");
-  }
-    
+  };
+
   return (
     <div className="login-container">
       <div className="login-form">
-        <div className="app-login">
-            <h1>My CARE</h1>
-        </div>
-        <br />
-        <form>
-          <input type="email" placeholder="Email address" required />
-          <input type="password" placeholder="Password" required />
-          <div className="form-check">
-            <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" />
-            <label className="form-check-label" htmlFor="flexRadioDefault1">
-              Patient
-            </label>
-            <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" defaultChecked />
-            <label className="form-check-label" htmlFor="flexRadioDefault2">
-              Agent
-            </label>
-          </div>
-          <div className="remember-forgot">
-            <label>
-              <input type="checkbox" /> Remember me
-            </label>
-            <a href="#">Forgot password?</a>
-          </div>
-          <button type="submit" className="login-btn" onClick={onButtonClick}>Login</button>
+        <h1>Login</h1>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" className="login-btn">Login</button>
         </form>
         <p>Don't have an account? <a href="/register">Register</a></p>
       </div>

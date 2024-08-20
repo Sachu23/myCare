@@ -1,50 +1,44 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { db } = require('./db/db');
-const { readdirSync } = require('fs');
-const { MongoClient } = require('mongodb');
-const http = require('http');
-const { Server } = require('socket.io');
+const mongoose = require('mongoose');
 const path = require('path');
-
-const authRoutes = require('./routes/auth');
-const protectedRoute = require('./routes/protectedRoute');
+const { Server } = require('socket.io');
+const http = require('http');
+const authRoutes = require('./routes/auth'); // Auth routes
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const uri = 'mongodb+srv://ssrini52:James$007@cluster0.j0uzqjk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-let dbConnection;
-
+// Middleware
 app.use(express.json());
 app.use(cors({ origin: "*" }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/protected', protectedRoute);
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Serve static files from the 'client/public' directory
-app.use(express.static(path.join(__dirname, '../client/public')));
+app.use(express.static(path.join(__dirname, 'client/public')));
 
 // Serve the index.html file when accessing the root URL
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client/public', 'index.html'));
 });
 
-const PORT = process.env.PORT || 9000;
-
+// Function to fetch and emit appointments
 const fetchAppointments = async () => {
   try {
-    if (!dbConnection) {
+    if (!mongoose.connection.readyState) {
       console.error('No database connection');
       return;
     }
-    const appointmentsCollection = dbConnection.collection('test'); // replace with your collection name
-    const agentsCollection = dbConnection.collection('agent'); // replace with your collection name
-    const patientsCollection = dbConnection.collection('patient'); // replace with your collection name
+    
+    const db = mongoose.connection.db;
+    const appointmentsCollection = db.collection('test'); // replace with your collection name
+    const agentsCollection = db.collection('agent'); // replace with your collection name
+    const patientsCollection = db.collection('patient'); // replace with your collection name
 
     const appointments = await appointmentsCollection.find({}).toArray();
     const agents = await agentsCollection.find({}).toArray();
@@ -71,7 +65,7 @@ const fetchAppointments = async () => {
     console.error('Error fetching appointments:', error);
   }
 };
-
+// WebSocket connection handling
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on('disconnect', () => {
@@ -79,13 +73,19 @@ io.on('connection', (socket) => {
   });
 });
 
+// Fetch appointments every 5 seconds and emit them to all connected clients
 setInterval(fetchAppointments, 5000);
 
+// Connect to MongoDB and start the server
 const startServer = async () => {
   try {
-    await client.connect();
-    dbConnection = client.db('Succhay'); // replace with your database name
-    db();
+    await mongoose.connect('mongodb+srv://ssrini52:James$007@cluster0.j0uzqjk.mongodb.net/Succhay?retryWrites=true&w=majority', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    
+    console.log('Connected to MongoDB');
+    const PORT = process.env.PORT || 9000;
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
